@@ -9,10 +9,6 @@ on:
 jobs:
   build-backend:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./spring-boot-oauth2-backend # Ajusta si tu carpeta se llama distinto
-    
     steps:
     - uses: actions/checkout@v4
     
@@ -23,15 +19,19 @@ jobs:
         distribution: 'temurin'
         cache: maven
         
-    - name: Build with Maven
-      run: mvn clean verify -DskipTests # Quitaremos el skipTests en el OKR 3
+    - name: Build Authorization Server
+      run: mvn clean verify -DskipTests
+      working-directory: ./authorization-server
+      
+    - name: Build Resource Server
+      run: mvn clean verify -DskipTests
+      working-directory: ./resource-server
 
-  # Job para el Frontend (Angular)
   build-frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./angular-google-oauth2-frontend # Ajusta si tu carpeta se llama distinto
+        working-directory: ./ag-prueba-front
         
     steps:
     - uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: '**/package-lock.json'
+        cache-dependency-path: 'ag-prueba-front/package-lock.json'
         
     - name: Install Dependencies
       run: npm ci --legacy-peer-deps
