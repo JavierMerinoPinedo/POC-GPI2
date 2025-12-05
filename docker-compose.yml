@@ -1,0 +1,77 @@
+services:
+  # Base de datos MySQL compartida
+  mysql-db:
+    image: mysql:8.0
+    container_name: aghairsalon-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: agprueba
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - ag-network
+
+  # Authorization Server (Puerto 9000)
+  auth-server:
+    build: ./authorization-server
+    container_name: auth-server
+    ports:
+      - "9000:9000"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/agprueba?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      # Forzamos al servidor a saber que su issuer es localhost para que coincida con el navegador
+      - SERVER_PORT=9000
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    networks:
+      - ag-network
+
+  # Resource Server (Puerto 8080)
+  resource-server:
+    build: ./resource-server
+    container_name: resource-server
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/agprueba?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      # IMPORTANTE: El Resource Server necesita validar el token contra el Auth Server.
+      # El token dice "iss": "http://localhost:9000".
+      # Usamos 'extra_hosts' abajo para engañar al contenedor y que 'localhost' apunte al auth-server
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://localhost:9000
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      auth-server:
+        condition: service_started
+    # Truco de red: Mapeamos "localhost" dentro de este contenedor a la IP del auth-server
+    # para que la validación del token (que tiene issuer localhost) funcione internamente.
+    extra_hosts:
+      - "localhost:host-gateway" 
+    networks:
+      - ag-network
+
+  # Frontend Angular (Puerto 4200 mapeado al 80 interno)
+  frontend:
+    build: ./ag-prueba-front
+    container_name: ag-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - auth-server
+      - resource-server
+    networks:
+      - ag-network
+
+networks:
+  ag-network:
+    driver: bridge
