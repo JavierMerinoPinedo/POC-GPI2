@@ -3,15 +3,11 @@ name: CI/CD Pipeline - Full Production
 on:
   push:
     branches: [ "main" ]
-  # Mantenemos pull_request para que verifique el código, 
-  # pero no desplegará (ver condición 'if' más abajo)
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  # --- FASE 1: INTEGRACIÓN CONTINUA (CI) ---
-  # Se ejecuta en la nube de GitHub para verificar que el código no está roto
-
+  # --- FASE 1: CI (Nube de GitHub) ---
   build-backend:
     runs-on: ubuntu-latest
     steps:
@@ -54,34 +50,26 @@ jobs:
     - name: Verify Angular Build
       run: npm run build -- --configuration production
 
-  # --- FASE 2: DESPLIEGUE CONTINUO (CD) ---
-  # Se ejecuta SOLO en tu servidor de la uni si lo anterior salió bien
-
+  # --- FASE 2: CD (Tu Runner Local) ---
   deploy-to-server:
-    # Necesitamos que el CI termine bien antes de intentar desplegar
     needs: [build-backend, build-frontend]
-    # Solo desplegamos si es un push a main (no en Pull Requests)
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
-    # IMPORTANTE: Aquí usamos tu runner instalado en el servidor
-    runs-on: self-hosted
+    runs-on: self-hosted  # <--- Tu máquina
     
     steps:
     - name: Checkout del código actualizado
       uses: actions/checkout@v4
 
     - name: Crear archivo .env seguro
-      # Usamos el secreto que configuraste en GitHub
+      # IMPORTANTE: Asegúrate de haber creado el secreto 'DB_PASSWORD' en GitHub
       run: |
         echo "MYSQL_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
 
-    - name: Reiniciar contenedores con Docker Compose
-      # 1. Tira lo viejo
-      # 2. Levanta lo nuevo reconstruyendo (--build)
+    - name: Reiniciar contenedores
+      # Corrección: Quitamos 'sudo' y usamos 'docker compose' (versión nueva)
       run: |
-        sudo docker-compose down
-        sudo docker-compose up -d --build
+        docker compose down
+        docker compose up -d --build
 
-    - name: Limpieza de imágenes Docker antiguas
-      # Para que no se llene el disco del servidor de la uni
-      run: sudo docker image prune -f
+    - name: Limpieza de imágenes
+      run: docker image prune -f
