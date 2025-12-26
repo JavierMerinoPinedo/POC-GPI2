@@ -11,10 +11,8 @@ describe('UserComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule
-      ],
-      declarations: [
-        UserComponent
+        RouterTestingModule,
+        UserComponent // ¡AQUÍ! En imports
       ],
       providers: [
         provideHttpClient(),

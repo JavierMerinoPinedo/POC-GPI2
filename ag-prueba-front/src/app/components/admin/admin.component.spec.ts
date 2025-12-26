@@ -11,11 +11,10 @@ describe('AdminComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule
+        RouterTestingModule,
+        AdminComponent // ¡AQUÍ! En imports, NO en declarations
       ],
-      declarations: [
-        AdminComponent
-      ],
+      // declarations: [], // BORRA ESTO si AdminComponent es standalone
       providers: [
         provideHttpClient(),
         provideHttpClientTesting()
