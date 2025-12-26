@@ -1,3 +1,4 @@
+//
 package com.aghairsalon.resourceserver;
 
 import org.junit.jupiter.api.Disabled; // Importa esto
@@ -8,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class ResourceserverApplicationTests {
 
     @Test
-    @Disabled("Deshabilitado temporalmente hasta configurar el Mock de JWT") 
+    @Disabled("Test deshabilitado en CI por falta de Auth Server corriendo") // Añade esta línea
     void contextLoads() {
     }
 
