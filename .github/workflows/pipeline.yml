@@ -47,12 +47,10 @@ jobs:
     - name: Install Dependencies
       run: npm install --legacy-peer-deps
 
-      # Linting (Análisis estático para frontend)
     - name: Lint Angular
       run: npm run lint
       continue-on-error: true
 
-      # Testing con Cobertura
     - name: Test Angular with Coverage
       run: npm test -- --no-watch --no-progress --browsers=ChromeHeadless
 
@@ -63,22 +61,29 @@ jobs:
   deploy-to-server:
     needs: [build-backend, build-frontend]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: self-hosted  # <--- Tu máquina
-    
+    runs-on: self-hosted
+
     steps:
     - name: Checkout del código actualizado
       uses: actions/checkout@v4
 
     - name: Crear archivo .env seguro
-      # IMPORTANTE: Asegúrate de haber creado el secreto 'DB_PASSWORD' en GitHub
       run: |
         echo "MYSQL_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
 
     - name: Reiniciar contenedores
-      # Corrección: Quitamos 'sudo' y usamos 'docker compose' (versión nueva)
       run: |
         docker compose down
         docker compose up -d --build
 
     - name: Limpieza de imágenes
       run: docker image prune -f
+
+    - name: Esperar a que los servicios arranquen
+      run: sleep 30
+
+    - name: Escaneo de Seguridad Post-Despliegue (OWASP ZAP)
+      uses: zaproxy/action-baseline@v0.9.0
+      with:
+        target: 'http://localhost:4200'
+        fail_action: false
