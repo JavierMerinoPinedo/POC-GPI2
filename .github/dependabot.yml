@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # 1. Configuración para Authorization Server (Maven)
+  - package-ecosystem: "maven"
+    directory: "/authorization-server"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+
+  # 2. Configuración para Resource Server (Maven)
+  - package-ecosystem: "maven"
+    directory: "/resource-server"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+
+  # 3. Configuración para Frontend (NPM)
+  - package-ecosystem: "npm"
+    directory: "/ag-prueba-front"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
