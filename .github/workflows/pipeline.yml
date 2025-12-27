@@ -70,6 +70,10 @@ jobs:
     runs-on: self-hosted
 
     steps:
+    - name: Liberar espacio en disco previo
+      run: docker system prune -a -f --filter "until=24h"
+      continue-on-error: true
+      
     - name: Checkout del código actualizado
       uses: actions/checkout@v4
 
