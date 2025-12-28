@@ -97,3 +97,4 @@ jobs:
       with:
         target: 'http://localhost:4200'
         fail_action: false
+        allow_issue_writing: false
