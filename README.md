@@ -1,3 +1,5 @@
+# Estado del Proyecto
+![CI/CD Pipeline](https://github.com/javiermerinopinedo/poc-gpi2/actions/workflows/pipeline.yml/badge.svg)
 
 # Proyecto de Prueba OAuth2 con Spring Boot, Angular y Google Sign-In
 
