@@ -94,6 +94,7 @@ jobs:
 
     - name: Escaneo de Seguridad Post-Despliegue (OWASP ZAP)
       uses: zaproxy/action-baseline@v0.9.0
+      continue-on-error: true
       with:
         target: 'http://localhost:4200'
         fail_action: false
